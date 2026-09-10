@@ -5,7 +5,7 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 
-from ypuller.catalog import CatalogError, MusicBrainzClient
+from ypuller.catalog import CatalogError, CatalogUnavailable, DeezerClient, MusicBrainzClient
 from ypuller.matcher import select_candidate
 from ypuller.media import MediaDownloader, MediaError, ensure_dependencies, safe_component
 from ypuller.youtube import YouTubeClient, YouTubeError
@@ -126,7 +126,11 @@ def main(argv: list[str] | None = None) -> int:
         catalog = MusicBrainzClient(os.environ.get("YPULLER_CONTACT", "local-use@example.invalid"))
         youtube = YouTubeClient()
         media = MediaDownloader()
-        return download_artist(args.artist, args.output, catalog, youtube, media)
+        try:
+            return download_artist(args.artist, args.output, catalog, youtube, media)
+        except CatalogUnavailable as error:
+            print(f"warning: {error}; using Deezer catalog fallback", file=sys.stderr)
+            return download_artist(args.artist, args.output, DeezerClient(), youtube, media)
     except (CatalogError, YouTubeError, MediaError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 2

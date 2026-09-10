@@ -50,33 +50,31 @@ class MediaDownloader:
         album_dir = output_dir / safe_component(artist) / safe_component(album.title)
         album_dir.mkdir(parents=True, exist_ok=True)
         stem = album_dir / f"{track.number:02d} - {safe_component(track.title)}"
-        output_path = stem.with_suffix(".m4a")
-        if output_path.exists():
-            self.verify_audio_only(output_path)
-            return output_path
+        output_path = Path(f"{stem}.m4a")
 
-        download_command = [
-            sys.executable,
-            "-m",
-            "yt_dlp",
-            "--no-config",
-            "--no-playlist",
-            "--js-runtimes",
-            "node",
-            "--format",
-            "bestaudio[ext=m4a]/bestaudio",
-            "--extract-audio",
-            "--audio-format",
-            "m4a",
-            "--audio-quality",
-            "0",
-            "--output",
-            f"{stem}.%(ext)s",
-            f"https://www.youtube.com/watch?v={candidate.video_id}",
-        ]
-        self._run_checked(download_command, "yt-dlp failed")
-        if not output_path.is_file():
-            raise MediaError(f"yt-dlp did not create the expected file: {output_path}")
+        if not output_path.exists():
+            download_command = [
+                sys.executable,
+                "-m",
+                "yt_dlp",
+                "--no-config",
+                "--no-playlist",
+                "--js-runtimes",
+                "node",
+                "--format",
+                "bestaudio[ext=m4a]/bestaudio",
+                "--extract-audio",
+                "--audio-format",
+                "m4a",
+                "--audio-quality",
+                "0",
+                "--output",
+                f"{stem}.%(ext)s",
+                f"https://www.youtube.com/watch?v={candidate.video_id}",
+            ]
+            self._run_checked(download_command, "yt-dlp failed")
+            if not output_path.is_file():
+                raise MediaError(f"yt-dlp did not create the expected file: {output_path}")
 
         tagged_path = Path(f"{stem}.tagged.m4a")
         tag_command = [

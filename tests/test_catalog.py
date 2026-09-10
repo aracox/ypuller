@@ -1,4 +1,4 @@
-from ypuller.catalog import MusicBrainzClient
+from ypuller.catalog import DeezerClient, MusicBrainzClient
 
 
 class FakeMusicBrainzClient(MusicBrainzClient):
@@ -90,3 +90,59 @@ def test_builds_ordered_tracks_from_official_primary_albums():
     assert [track.title for track in albums[0].tracks] == ["Life", "ความเชื่อ"]
     assert [track.number for track in albums[0].tracks] == [1, 2]
     assert albums[0].tracks[1].duration_seconds == 285
+
+
+class FakeDeezerClient(DeezerClient):
+    def __init__(self, responses):
+        self.responses = iter(responses)
+
+    def _get(self, path, params):
+        return next(self.responses)
+
+
+def test_deezer_fallback_selects_the_popular_exact_artist_and_studio_albums():
+    client = FakeDeezerClient(
+        [
+            {
+                "data": [
+                    {"id": 1, "name": "Bodyslam", "nb_fan": 0},
+                    {"id": 254379, "name": "Bodyslam", "nb_fan": 205618},
+                ]
+            },
+            {
+                "data": [
+                    {
+                        "id": 10,
+                        "title": "Believe",
+                        "record_type": "album",
+                        "release_date": "2005-04-22",
+                    },
+                    {
+                        "id": 11,
+                        "title": "Bodyslam Remix",
+                        "record_type": "album",
+                        "release_date": "2015-07-27",
+                    },
+                    {
+                        "id": 12,
+                        "title": "A Single",
+                        "record_type": "single",
+                        "release_date": "2026-01-01",
+                    },
+                ]
+            },
+            {
+                "data": [
+                    {"id": 101, "title": "Life", "duration": 241, "track_position": 1},
+                    {"id": 102, "title": "ความเชื่อ", "duration": 297, "track_position": 2},
+                ]
+            },
+        ]
+    )
+
+    artist = client.resolve_artist("bodyslam")
+    albums = client.get_albums(artist.id)
+
+    assert artist.id == "254379"
+    assert [album.title for album in albums] == ["Believe"]
+    assert [track.title for track in albums[0].tracks] == ["Life", "ความเชื่อ"]

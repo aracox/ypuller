@@ -4,6 +4,9 @@
 official studio-album catalog from MusicBrainz, searches YouTube for each track, and saves
 confident matches as audio-only `.m4a` files grouped by album.
 
+If MusicBrainz is temporarily unavailable, ypuller falls back to Deezer's public catalog and
+filters obvious compilations, live albums, remixes, and anniversary collections by title.
+
 Use it only for media you own, have permission to download, or may download under applicable
 law. The program does not bypass private, paid, members-only, geographic, authentication, or
 DRM restrictions.

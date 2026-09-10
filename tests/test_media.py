@@ -29,15 +29,15 @@ def test_downloads_tags_and_verifies_audio_only(tmp_path):
             stderr="",
         )
 
-    track = Track("recording-1", "ความเชื่อ", 2, 285)
+    track = Track("recording-1", "ความเชื่อ (feat. Guest)", 2, 285)
     album = Album("album-1", "Believe", "2005", [track])
     candidate = Candidate("video-1", "title", "channel", 284)
     downloader = MediaDownloader(runner=fake_runner)
 
     result = downloader.download("Bodyslam", album, track, candidate, tmp_path)
 
-    assert result == tmp_path / "Bodyslam" / "Believe" / "02 - ความเชื่อ.m4a"
+    assert result == tmp_path / "Bodyslam" / "Believe" / "02 - ความเชื่อ (feat. Guest).m4a"
     assert result.read_bytes() == b"tagged"
-    assert any("title=ความเชื่อ" in command for command in commands[1])
+    assert any("title=ความเชื่อ (feat. Guest)" in command for command in commands[1])
     assert commands[0][commands[0].index("--js-runtimes") + 1] == "node"
     assert commands[-1][0] == "ffprobe"
