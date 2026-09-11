@@ -146,3 +146,56 @@ def test_deezer_fallback_selects_the_popular_exact_artist_and_studio_albums():
     assert artist.id == "254379"
     assert [album.title for album in albums] == ["Believe"]
     assert [track.title for track in albums[0].tracks] == ["Life", "ความเชื่อ"]
+
+
+def test_deezer_fallback_excludes_collections_and_duplicate_reissues():
+    client = FakeDeezerClient(
+        [
+            {
+                "data": [
+                    {
+                        "id": 20,
+                        "title": "Silly Fools - The One",
+                        "record_type": "album",
+                        "release_date": "2008-01-01",
+                    },
+                    {
+                        "id": 21,
+                        "title": "Silly Fools Hits",
+                        "record_type": "album",
+                        "release_date": "2010-01-01",
+                    },
+                    {
+                        "id": 22,
+                        "title": "Signature Collection of Silly Fools",
+                        "record_type": "album",
+                        "release_date": "2018-01-01",
+                    },
+                    {
+                        "id": 23,
+                        "title": "SILLY FOOLS SELECTION HI-RES SERIES",
+                        "record_type": "album",
+                        "release_date": "2019-01-01",
+                    },
+                    {
+                        "id": 25,
+                        "title": "COVER NIGHT PLUS BIG ASS & POTATO",
+                        "record_type": "album",
+                        "release_date": "2013-01-01",
+                    },
+                    {
+                        "id": 24,
+                        "title": "The One",
+                        "record_type": "album",
+                        "release_date": "2024-01-01",
+                    },
+                ]
+            },
+            {"data": [{"id": 201, "title": "Track", "duration": 200}]},
+            {"data": [{"id": 202, "title": "Track", "duration": 200}]},
+        ]
+    )
+
+    albums = client.get_albums("artist-1")
+
+    assert [album.title for album in albums] == ["Silly Fools - The One"]

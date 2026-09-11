@@ -180,6 +180,7 @@ class DeezerClient:
 
         albums = []
         seen_titles = set()
+        seen_tracklists = set()
         for raw_album in raw_albums:
             normalized_title = _normalize_name(raw_album.get("title", ""))
             if not normalized_title or normalized_title in seen_titles:
@@ -202,6 +203,10 @@ class DeezerClient:
                     )
                 )
             if tracks:
+                tracklist = tuple(_normalize_name(track.title) for track in tracks)
+                if tracklist in seen_tracklists:
+                    continue
+                seen_tracklists.add(tracklist)
                 release_date = raw_album.get("release_date") or ""
                 albums.append(
                     Album(
@@ -252,13 +257,18 @@ _SECONDARY_ALBUM_MARKERS = (
     "absolute",
     "anniversary",
     "best of",
+    "combo",
     "compilation",
     "concert",
+    "cover",
     "greatest hits",
+    "hits",
     "in love",
     "live",
     "oursong",
     "remix",
+    "selection",
+    "signature collection",
 )
 
 

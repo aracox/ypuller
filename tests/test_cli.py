@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import ypuller.cli as cli
-from ypuller.catalog import CatalogUnavailable
+from ypuller.catalog import CatalogError
 from ypuller.cli import download_artist
 from ypuller.models import Album, Artist, Candidate, Track
 
@@ -69,7 +69,7 @@ def test_main_does_not_require_a_youtube_api_key(monkeypatch, tmp_path):
     assert created["youtube"] is True
 
 
-def test_main_uses_deezer_when_musicbrainz_is_unavailable(monkeypatch, tmp_path):
+def test_main_uses_deezer_when_musicbrainz_cannot_resolve_artist(monkeypatch, tmp_path):
     calls = []
     monkeypatch.setattr(cli, "ensure_dependencies", lambda: None)
     monkeypatch.setattr(cli, "MusicBrainzClient", lambda contact: "musicbrainz")
@@ -80,7 +80,7 @@ def test_main_uses_deezer_when_musicbrainz_is_unavailable(monkeypatch, tmp_path)
     def fake_download(keyword, output, catalog, youtube, media):
         calls.append(catalog)
         if catalog == "musicbrainz":
-            raise CatalogUnavailable("unavailable")
+            raise CatalogError("artist not found")
         return 0
 
     monkeypatch.setattr(cli, "download_artist", fake_download)

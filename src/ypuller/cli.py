@@ -5,7 +5,7 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 
-from ypuller.catalog import CatalogError, CatalogUnavailable, DeezerClient, MusicBrainzClient
+from ypuller.catalog import CatalogError, DeezerClient, MusicBrainzClient
 from ypuller.matcher import select_candidate
 from ypuller.media import MediaDownloader, MediaError, ensure_dependencies, safe_component
 from ypuller.youtube import YouTubeClient, YouTubeError
@@ -128,7 +128,7 @@ def main(argv: list[str] | None = None) -> int:
         media = MediaDownloader()
         try:
             return download_artist(args.artist, args.output, catalog, youtube, media)
-        except CatalogUnavailable as error:
+        except CatalogError as error:
             print(f"warning: {error}; using Deezer catalog fallback", file=sys.stderr)
             return download_artist(args.artist, args.output, DeezerClient(), youtube, media)
     except (CatalogError, YouTubeError, MediaError) as error:
